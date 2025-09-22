@@ -1,0 +1,141 @@
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: nosql_mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password123
+      MONGO_INITDB_DATABASE: ecommerce
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./data/mongodb:/docker-entrypoint-initdb.d
+    networks:
+      - nosql_network
+    restart: unless-stopped
+
+  neo4j:
+    image: neo4j:5.15-community
+    container_name: nosql_neo4j
+    environment:
+      NEO4J_AUTH: neo4j/password123
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    ports:
+      - "7474:7474"  # HTTP
+      - "7687:7687"  # Bolt
+    volumes:
+      - neo4j_data:/data
+      - neo4j_logs:/logs
+      - neo4j_import:/var/lib/neo4j/import
+      - neo4j_plugins:/plugins
+    networks:
+      - nosql_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: nosql_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - nosql_network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # Optional: Redis Commander for GUI (ARM64 compatible)
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: nosql_redis_commander
+    platform: linux/amd64
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    ports:
+      - "8081:8081"
+    networks:
+      - nosql_network
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  # PostgreSQL for Trino federated queries
+  postgresql:
+    image: postgres:15
+    container_name: nosql_postgresql
+    environment:
+      POSTGRES_DB: ecommerce_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgresql_data:/var/lib/postgresql/data
+      - ./data/postgresql:/docker-entrypoint-initdb.d
+    networks:
+      - nosql_network
+    restart: unless-stopped
+
+  # Trino Coordinator
+  trino-coordinator:
+    image: trinodb/trino:435
+    container_name: nosql_trino_coordinator
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./trino-config/config.properties:/etc/trino/config.properties
+      - ./trino-config/jvm.config:/etc/trino/jvm.config
+      - ./trino-config/node.properties:/etc/trino/node.properties
+      - ./trino-config/catalog:/etc/trino/catalog
+    environment:
+      - "TRINO_NODE_ID=coordinator"
+      - "TRINO_JVM_HEAP_SIZE=2G"
+    networks:
+      - nosql_network
+    depends_on:
+      - mongodb
+      - postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Trino Worker
+  trino-worker:
+    image: trinodb/trino:435
+    container_name: nosql_trino_worker
+    volumes:
+      - ./trino-config/node.properties:/etc/trino/node.properties
+      - ./trino-config/jvm.config:/etc/trino/jvm.config
+    environment:
+      - "TRINO_NODE_ID=worker1"
+      - "TRINO_JVM_HEAP_SIZE=2G"
+      - "TRINO_COORDINATOR_URI=http://trino-coordinator:8080"
+    networks:
+      - nosql_network
+    depends_on:
+      - mongodb
+      - postgresql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/v1/status || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:
+  neo4j_data:
+  neo4j_logs:
+  neo4j_import:
+  neo4j_plugins:
+  redis_data:
+  postgresql_data:
+
+networks:
+  nosql_network:
+    driver: bridge

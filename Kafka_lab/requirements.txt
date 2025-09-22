@@ -1,0 +1,29 @@
+# Kafka Python client
+kafka-python==2.0.2
+confluent-kafka==2.3.0
+
+# Data processing
+pandas==2.1.4
+numpy==1.24.3
+
+# Visualization
+matplotlib==3.7.2
+seaborn==0.12.2
+plotly==5.17.0
+
+# Utilities
+python-dotenv==1.0.0
+tqdm==4.66.1
+requests==2.31.0
+
+# JSON and serialization
+avro-python3==1.11.3
+fastavro==1.9.0
+
+# Redis for caching
+redis==5.0.1
+
+# Jupyter
+jupyter==1.0.0
+jupyterlab==4.0.9
+ipywidgets==8.1.1

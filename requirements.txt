@@ -1,0 +1,19 @@
+# PyIceberg Lab Requirements
+# Core PyIceberg với các dependencies cần thiết
+pyiceberg[s3fs,hive,pyarrow]>=0.7.0
+
+# Data processing libraries
+pyarrow>=12.0.0
+pandas>=2.0.0
+
+# Optional: Jupyter notebook support
+jupyter>=1.0.0
+ipykernel>=6.0.0
+
+# Optional: Data visualization
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Optional: Additional file system support
+s3fs>=2023.6.0
+fsspec>=2023.6.0
