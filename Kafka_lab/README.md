@@ -113,7 +113,7 @@ Stock Data Generator → Kafka Producer → Stock Data Topic
 ### **Kafka Settings:**
 - **Bootstrap Servers**: localhost:9092
 - **Topic**: stock-data
-- **Partitions**: 3 (configurable)
+- **Partitions**: 3 (configurable, applied by default for newly auto-created topics)
 - **Replication Factor**: 1 (single broker)
 
 ### **Consumer Groups:**
@@ -143,7 +143,16 @@ Stock Data Generator → Kafka Producer → Stock Data Topic
    docker exec -it kafka_broker kafka-topics --bootstrap-server localhost:9092 --list
    ```
 
-3. **Consumer group issues**:
+3. **`stock-data` chỉ có 1 partition thay vì 3**:
+   - `KAFKA_NUM_PARTITIONS=3` chỉ áp dụng cho topic mới được auto-create
+   - Nếu `stock-data` đã được tạo trước đó với 1 partition, hãy xóa và tạo lại:
+   ```bash
+   docker exec -it kafka_broker kafka-topics --bootstrap-server localhost:9092 --delete --topic stock-data
+   docker exec -it kafka_broker kafka-topics --bootstrap-server localhost:9092 --create --topic stock-data --partitions 3 --replication-factor 1
+   docker exec -it kafka_broker kafka-topics --bootstrap-server localhost:9092 --describe --topic stock-data
+   ```
+
+4. **Consumer group issues**:
    - Check consumer group status in Kafka UI
    - Verify partition assignments
    - Check for consumer lag

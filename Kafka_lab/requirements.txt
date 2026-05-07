@@ -17,8 +17,10 @@ tqdm==4.66.1
 requests==2.31.0
 
 # JSON and serialization
-avro-python3==1.11.3
-fastavro==1.9.0
+# avro-python3 đã deprecated; dùng avro chính thức để tương thích Python 3.10+
+avro==1.11.3
+# fastavro 1.10.0+ có wheel sẵn cho Python 3.10/macOS, tránh build source lỗi
+fastavro==1.10.0
 
 # Redis for caching
 redis==5.0.1
