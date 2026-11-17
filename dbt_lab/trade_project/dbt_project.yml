@@ -1,0 +1,8 @@
+name: trade
+version: "1.0.0"
+profile: trade
+model-paths: ["models"]
+seed-paths: ["seeds"]
+models:
+  trade:
+    +materialized: table

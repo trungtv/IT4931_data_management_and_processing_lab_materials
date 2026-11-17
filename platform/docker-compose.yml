@@ -1,0 +1,313 @@
+name: it4931
+
+x-airflow-common: &airflow-common
+  build:
+    context: ./airflow
+  image: it4931-airflow:3.1.1
+  environment: &airflow-env
+    AIRFLOW__CORE__EXECUTOR: LocalExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
+    AIRFLOW__CORE__FERNET_KEY: ""
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-apiserver:8080/execution/
+    AIRFLOW__API_AUTH__JWT_SECRET: it4931-lab-jwt
+    AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    PYTHONPATH: /opt/airflow/pipeline:/opt/airflow/airflow_exercises
+    KAFKA_BOOTSTRAP: kafka:29092
+    MINIO_ENDPOINT: http://minio:9000
+    MINIO_ACCESS_KEY: minioadmin
+    MINIO_SECRET_KEY: minioadmin
+    MINIO_S3_ENDPOINT: minio:9000
+    SPARK_MASTER: local[*]
+    DBT_PROJECT_DIR: /opt/airflow/dbt_project
+    DBT_PROFILES_DIR: /opt/airflow/dbt_project
+    DBT_DUCKDB_PATH: /tmp/lakehouse.duckdb
+  volumes: &airflow-volumes
+    - ../Data_Lakehouse_lab/dags:/opt/airflow/dags
+    - ../Airflow_lab/dags/trade_quality_gate.py:/opt/airflow/dags/trade_quality_gate.py
+    - ../Airflow_lab/exercises:/opt/airflow/airflow_exercises
+    - ../Spark_lab/lab:/opt/airflow/spark_lab
+    - ../dbt_lab/trade_project:/opt/airflow/trade_dbt
+    - ../DuckDB_lab/lab:/opt/airflow/duckdb_lab
+    - ../Data_Lakehouse_lab/pipeline:/opt/airflow/pipeline
+    - ../Data_Lakehouse_lab/dbt_project:/opt/airflow/dbt_project
+    - airflow_logs:/opt/airflow/logs
+  user: "${AIRFLOW_UID:-50000}:0"
+  networks:
+    - it4931
+  depends_on: &airflow-depends
+    postgres:
+      condition: service_healthy
+    minio-init:
+      condition: service_completed_successfully
+    kafka:
+      condition: service_healthy
+
+services:
+  minio:
+    image: bitnamilegacy/minio:2024.12.18-debian-12-r0
+    container_name: it4931-minio
+    profiles: [core, lakehouse]
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/bitnami/minio/data
+    networks:
+      - it4931
+
+  minio-init:
+    image: bitnamilegacy/minio-client:2024.11.21
+    container_name: it4931-minio-init
+    profiles: [core, lakehouse]
+    depends_on:
+      minio:
+        condition: service_started
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        i=0
+        until mc alias set local http://minio:9000 minioadmin minioadmin; do
+          i=$$((i + 1))
+          if [ "$$i" -gt 30 ]; then
+            echo "MinIO không sẵn sàng"
+            exit 1
+          fi
+          sleep 2
+        done
+        mc mb --ignore-existing local/warehouse
+    networks:
+      - it4931
+    restart: "no"
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: it4931-postgres
+    profiles: [core, lakehouse]
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U airflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - it4931
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: it4931-kafka
+    profiles: [kafka, lakehouse]
+    ports:
+      - "9092:9092"
+    environment:
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://localhost:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD-SHELL", "kafka-topics --bootstrap-server kafka:29092 --list"]
+      interval: 10s
+      timeout: 10s
+      retries: 12
+      start_period: 20s
+    networks:
+      - it4931
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.5.0
+    container_name: it4931-schema-registry
+    profiles: [kafka, lakehouse]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka:29092
+      SCHEMA_REGISTRY_LISTENERS: http://0.0.0.0:8081
+    networks:
+      - it4931
+
+  kafka-connect:
+    image: confluentinc/cp-kafka-connect:7.5.0
+    container_name: it4931-kafka-connect
+    profiles: [kafka, lakehouse]
+    depends_on:
+      kafka:
+        condition: service_healthy
+      schema-registry:
+        condition: service_started
+    ports:
+      - "8083:8083"
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: kafka:29092
+      CONNECT_REST_ADVERTISED_HOST_NAME: kafka-connect
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: it4931-connect
+      CONNECT_CONFIG_STORAGE_TOPIC: docker-connect-configs
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_TOPIC: docker-connect-offsets
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_TOPIC: docker-connect-status
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.storage.StringConverter
+    networks:
+      - it4931
+
+  akhq:
+    image: tchiotludo/akhq:0.25.0
+    container_name: it4931-akhq
+    profiles: [kafka, lakehouse]
+    depends_on:
+      kafka:
+        condition: service_healthy
+    ports:
+      - "8088:8080"
+    environment:
+      AKHQ_CONFIGURATION: |
+        akhq:
+          connections:
+            it4931:
+              properties:
+                bootstrap.servers: "kafka:29092"
+              schema-registry:
+                url: "http://schema-registry:8081"
+    networks:
+      - it4931
+
+  spark-master:
+    image: bitnamilegacy/spark:3.5.0
+    container_name: it4931-spark-master
+    profiles: [spark, lakehouse]
+    environment:
+      SPARK_MODE: master
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    ports:
+      - "8082:8080"
+      - "7077:7077"
+    networks:
+      - it4931
+
+  spark-worker:
+    image: bitnamilegacy/spark:3.5.0
+    container_name: it4931-spark-worker
+    profiles: [spark, lakehouse]
+    depends_on:
+      spark-master:
+        condition: service_started
+    environment:
+      SPARK_MODE: worker
+      SPARK_MASTER_URL: spark://spark-master:7077
+      SPARK_WORKER_MEMORY: 2G
+      SPARK_WORKER_CORES: 2
+      SPARK_RPC_AUTHENTICATION_ENABLED: "no"
+      SPARK_RPC_ENCRYPTION_ENABLED: "no"
+      SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED: "no"
+      SPARK_SSL_ENABLED: "no"
+    networks:
+      - it4931
+
+  airflow-init:
+    <<: *airflow-common
+    container_name: it4931-airflow-init
+    profiles: [airflow, lakehouse]
+    command: version
+    environment:
+      <<: *airflow-env
+      AIRFLOW_UID: ${AIRFLOW_UID:-50000}
+      _AIRFLOW_DB_MIGRATE: "true"
+      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_WWW_USER_USERNAME: airflow
+      _AIRFLOW_WWW_USER_PASSWORD: airflow
+      _AIRFLOW_WWW_USER_EMAIL: airflow@example.com
+      _AIRFLOW_WWW_USER_FIRSTNAME: Airflow
+      _AIRFLOW_WWW_USER_LASTNAME: Admin
+    user: "0:0"
+    restart: "no"
+
+  airflow-apiserver:
+    <<: *airflow-common
+    container_name: it4931-airflow-apiserver
+    profiles: [airflow, lakehouse]
+    command: api-server
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    depends_on:
+      <<: *airflow-depends
+      airflow-init:
+        condition: service_completed_successfully
+
+  airflow-scheduler:
+    <<: *airflow-common
+    container_name: it4931-airflow-scheduler
+    profiles: [airflow, lakehouse]
+    command: scheduler
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    depends_on:
+      <<: *airflow-depends
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-apiserver:
+        condition: service_healthy
+
+  airflow-dag-processor:
+    <<: *airflow-common
+    container_name: it4931-airflow-dag-processor
+    profiles: [airflow, lakehouse]
+    command: dag-processor
+    depends_on:
+      <<: *airflow-depends
+      airflow-init:
+        condition: service_completed_successfully
+
+networks:
+  it4931:
+    name: it4931
+
+volumes:
+  minio_data:
+  postgres_data:
+  kafka_data:
+  airflow_logs:

@@ -67,7 +67,8 @@ chmod +x setup_lakehouse_lab.sh
 
 3. **Start all services:**
 ```bash
-docker-compose up -d
+export AIRFLOW_UID=$(id -u)
+docker compose -f ../platform/docker-compose.yml --profile lakehouse up -d --build
 ```
 
 4. **Wait for services to be ready:**

@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-consumer
+spec:
+  selector:
+    matchLabels:
+      app: trade-consumer
+  template:
+    metadata:
+      labels:
+        app: trade-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: it4931-trade-consumer:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - name: config
+              mountPath: /etc/trade
+      volumes:
+        - name: config
+          configMap:
+            name: trade-consumer
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: trade-consumer
+data:
+  KAFKA_BOOTSTRAP: kafka:9092
+  TOPIC: trades
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: trade-consumer
+stringData:
+  MINIO_ACCESS_KEY: minioadmin
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trade-consumer
+spec:
+  selector:
+    app: trade-consumer
+  ports:
+    - port: 8080
+      targetPort: 8080

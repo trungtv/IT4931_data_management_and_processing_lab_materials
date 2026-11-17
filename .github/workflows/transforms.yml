@@ -1,0 +1,31 @@
+name: transforms
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install pandas==2.2.3 pytest==8.3.4 pyyaml==6.0.2 great_expectations==1.5.11
+      - run: >-
+          pytest
+          Data_Lakehouse_lab/tests
+          pyiceberg/tests
+          Spark_lab/tests
+          NoSQL_lab/tests
+          Airflow_lab/tests
+          dbt_lab/tests
+          Streaming_Lakehouse_lab/tests
+          docker_lab/tests
+          K8s_Basics_lab/tests
+          S3_lab/tests
+          DuckDB_lab/tests
+          Great_Expectations_lab/tests
+        env:
+          PYTHONPATH: Data_Lakehouse_lab/pipeline

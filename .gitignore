@@ -129,4 +129,7 @@ dmypy.json
 .pyre/
 
 # Spark Lab Data Directory
-spark-lab/data/
+archive/spark-lab/data/
+
+# dbt local identity
+**/.user.yml

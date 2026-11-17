@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: trade-consumer
+spec:
+  selector:
+    matchLabels:
+      app: trade-consumer
+  template:
+    metadata:
+      labels:
+        app: trade-consumer
+    spec:
+      containers:
+        - name: consumer
+          image: it4931-trade-consumer:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: 8081
+          resources:
+            requests:
+              memory: 256Mi
+            limits:
+              memory: 128Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: trade-consumer
+spec:
+  selector:
+    app: trades
+  ports:
+    - port: 8080
+      targetPort: 8080

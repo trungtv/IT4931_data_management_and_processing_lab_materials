@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: silver_trades
+    columns:
+      - name: trade_id
+        tests:
+          - not_null
+          - unique
+      - name: symbol
+        tests:
+          - not_null
+      - name: side
+        tests:
+          - not_null
+          - accepted_values:
+              values: ["BUY", "SELL"]
+  - name: mart_symbol_stats
+    columns:
+      - name: symbol
+        tests:
+          - not_null
+          - unique
+      - name: trade_count
+        tests:
+          - not_null

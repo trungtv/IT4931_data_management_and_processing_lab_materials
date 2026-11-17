@@ -1,8 +1,10 @@
 # Docker Lab - Container Fundamentals
 
+Bài chấm được nằm ở `exercises/image_review.py` và notebook `06_layer_cache_and_image_review.ipynb`: đếm layer phải build lại, và soát Dockerfile của image Airflow.
+
 ## 📋 Overview
 
-Bài lab giới thiệu **Docker** – nền tảng container hóa phổ biến nhất. Học viên sẽ nắm khái niệm image, container, Dockerfile, Docker Compose và cách dùng Docker trong môi trường data engineering (Kafka, MinIO, Airflow, Spark… đều chạy trong Docker).
+Notebook 1–5 gọi `exercises/image_review.py` trên `platform/airflow/Dockerfile`. Image này phải không còn lỗi `unpinned_base`, `add_instead_of_copy`, `runs_as_root`, `apt_lists_kept`, `pip_cache_kept`. Không kéo `alpine:latest`.
 
 ## 🎯 Learning Objectives
 

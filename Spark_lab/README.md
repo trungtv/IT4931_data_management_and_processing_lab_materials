@@ -1,5 +1,7 @@
 # Spark Lab - Big Data Processing with Apache Spark
 
+VWAP chạy được nằm ở `lab/trade_sql.py` và notebook `01_spark_batch_processing.ipynb`: Spark SQL trong scheduler, cùng số với `aggregate_trades`. Catalog Iceberg của lab là runtime `1.6.1`, warehouse `s3a://warehouse/iceberg`. Session window vẫn ở `exercises/sessions.py`.
+
 ## 🎯 Overview
 This lab provides hands-on experience with Apache Spark for big data processing, including batch processing, streaming, and machine learning.
 

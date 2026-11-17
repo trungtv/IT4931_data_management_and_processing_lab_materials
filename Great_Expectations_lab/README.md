@@ -1,5 +1,9 @@
 # Great Expectations Lab - Data Quality và Validation
 
+Bài chấm được nằm ở `exercises/trade_suite.py` và notebook `07_trade_suite.ipynb`: suite GX 1.5 trên context ephemeral. Batch lỗi thì danh sách expectation fail không rỗng.
+
+> Ngoài lộ trình chính. Capstone dùng dbt test (`Data_Lakehouse_lab/dbt_project`). Notebook 1, 5, 6 và 7 gọi `trade_suite.py` trên GX 1.5. Không dùng `gx.from_pandas`.
+
 ## 📋 Overview
 
 Hệ thống bài lab học tập về **Great Expectations (GE)** - công cụ mạnh mẽ cho data quality và validation. Lab này bao gồm cả Great Expectations standalone và tích hợp với dbt.

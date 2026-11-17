@@ -1,5 +1,9 @@
 # Kubernetes Basics Lab - Container Orchestration Fundamentals
 
+Notebook 1–7 đọc `manifests/trade-consumer.yaml` và `trade-consumer-broken.yaml` bằng `exercises/diagnose.py`. Không cần kubectl. Manifest vỡ lệch selector, probe TCP cổng 8081, request 256Mi lớn hơn limit 128Mi.
+
+Độ khó thực tế: làm quen Pod, Deployment, Service. Không phải bài vận hành production.
+
 ## 🎯 Overview
 
 Lab này cung cấp kiến thức cơ bản về **Kubernetes (K8s)** - container orchestration platform hàng đầu. Sinh viên sẽ học cách deploy, quản lý và scale applications trên Kubernetes từ cơ bản đến nâng cao.

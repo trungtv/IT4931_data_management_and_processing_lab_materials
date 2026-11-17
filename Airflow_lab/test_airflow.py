@@ -31,7 +31,7 @@ def test_docker_services():
             
             # Check if services are running
             output = result.stdout
-            if "airflow-webserver" in output and "Up" in output:
+            if "airflow-apiserver" in output and "Up" in output:
                 print("✅ Airflow webserver is running")
             else:
                 print("⚠️  Airflow webserver might not be running")
@@ -66,7 +66,7 @@ def test_airflow_ui():
     try:
         # Test health endpoint
         response = requests.get(
-            f"{AIRFLOW_URL}/health",
+            f"{AIRFLOW_URL}/api/v2/monitor/health",
             auth=(AIRFLOW_USERNAME, AIRFLOW_PASSWORD),
             timeout=10
         )
@@ -120,7 +120,7 @@ def test_airflow_cli():
     
     try:
         result = subprocess.run(
-            ["docker", "compose", "exec", "-T", "airflow-webserver", "airflow", "version"],
+            ["docker", "compose", "exec", "-T", "airflow-scheduler", "airflow", "version"],
             capture_output=True,
             text=True,
             timeout=10
@@ -145,7 +145,7 @@ def test_dags():
     
     try:
         result = subprocess.run(
-            ["docker", "compose", "exec", "-T", "airflow-webserver", "airflow", "dags", "list"],
+            ["docker", "compose", "exec", "-T", "airflow-scheduler", "airflow", "dags", "list"],
             capture_output=True,
             text=True,
             timeout=10

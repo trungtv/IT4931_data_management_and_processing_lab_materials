@@ -1,5 +1,7 @@
 # S3 Lab - Object Storage với Amazon S3 & MinIO
 
+Bài chạy được nằm ở `lab/s3_course.py` và notebook `01`–`04`: key, `head_bucket`, SDK ghi/đọc/xóa, và key metadata snapshot. Multipart vẫn ở `exercises/layout.py`.
+
 ## 📋 Overview
 
 Bài lab giới thiệu **object storage** thông qua **Amazon S3** (AWS) và **MinIO** – công cụ lưu trữ object S3-compatible chạy được on-premise hoặc trên Docker. Học viên sẽ nắm khái niệm bucket/object, API S3, và cách dùng MinIO để mô phỏng S3 trong môi trường lab (triển khai bằng Docker).

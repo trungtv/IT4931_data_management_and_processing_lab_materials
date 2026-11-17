@@ -1,5 +1,7 @@
 # NoSQL Lab - Multi-Model Database Architecture
 
+Lệnh thật nằm ở `lab/nosql_course.py` và notebook `01`–`06`: Mongo đếm theo mã, Redis giữ giá có TTL, Neo4j đi hai cạnh, và chọn store theo câu hỏi. Chỉ bật `mongodb`, `redis`, `neo4j`. Không bật Postgres cổng 5432.
+
 ## 🎯 Objectives
 This lab helps students understand and practice with different NoSQL database types in a real-world microservices architecture.
 

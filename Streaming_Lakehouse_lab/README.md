@@ -1,5 +1,9 @@
 # Streaming Lakehouse Lab - Unified Batch & Stream Processing
 
+Bài chấm được nằm ở `exercises/same_function.py` và notebook `07_one_clean_function.ipynb`: `clean_trades` chạy một lần trên toàn bộ dòng, vì dọn từng micro-batch vẫn để lọt khóa trùng.
+
+Notebook 1 giữ phần so sánh Lambda, Kappa và Streaming Lakehouse. Notebook 2–6 gọi chung module `Data_Lakehouse_lab/pipeline`. `docker-compose.yml` include `platform/docker-compose.yml`. Không kéo `bitnami/spark:3.5.0` hay `minio/minio:latest`.
+
 ## 📋 Overview
 
 Lab này dạy về **Streaming Lakehouse Architecture** - kiến trúc hiện đại thay thế Lambda/Kappa, cho phép batch và streaming xử lý **chung trên cùng storage và code**.

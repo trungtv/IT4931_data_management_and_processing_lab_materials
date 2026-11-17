@@ -1,5 +1,7 @@
 # Kafka Lab - Real-time Stock Market Data Streaming
 
+Bài chạy được nằm ở `lab/offset_drill.py` và notebook `06_failure_drill_offset.ipynb`: consumer đóng trước commit thì lần sau đọc lại đúng `0, 1, 2`. Topic replication factor 1.
+
 ## 🎯 Overview
 
 This lab series focuses on Apache Kafka fundamentals using real-world stock market data (OHLCV). Students will learn consumer groups, partitioning strategies, offset management, and real-time analytics through hands-on exercises.

@@ -1,5 +1,7 @@
 # PyIceberg Lab - Apache Iceberg with Python
 
+Bài chấm được nằm ở `exercises/plan.py` và notebook `6_compaction_and_time_travel_decisions.ipynb`: gom file theo target size, và chọn snapshot time travel khi hai snapshot cùng thời điểm.
+
 ## 📋 Overview
 
 This lab will guide you through using **PyIceberg** - the official Python library for Apache Iceberg. You will learn how to create, manage, and analyze data with Iceberg tables through Python.

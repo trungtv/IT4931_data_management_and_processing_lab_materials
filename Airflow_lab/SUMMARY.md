@@ -11,10 +11,7 @@ Airflow_lab/
 ├── README.md                  # Detailed guide
 ├── SUMMARY.md                 # This file
 ├── dags/                      # Sample DAGs
-│   ├── hello_world_dag.py
-│   ├── tutorial_dag.py
-│   ├── branching_dag.py
-│   └── xcom_dag.py
+│   └── trade_quality_gate.py
 ├── notebooks/                 # Jupyter notebooks
 │   └── 01_airflow_basics.ipynb
 ├── logs/                      # Airflow logs

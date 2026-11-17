@@ -1,0 +1,11 @@
+version: 2
+models:
+  - name: symbol_stats
+    columns:
+      - name: symbol
+        tests:
+          - not_null
+          - unique
+      - name: trade_count
+        tests:
+          - not_null

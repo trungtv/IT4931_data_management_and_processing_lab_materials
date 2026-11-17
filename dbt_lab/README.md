@@ -1,5 +1,7 @@
 # dbt Lab - Data Build Tool Learning Lab
 
+Project chạy được là `trade_project` và notebook `01_dbt_basics.ipynb`: seed ba giao dịch, model `symbol_stats`, macro `vwap`, `dbt build` trên DuckDB trong scheduler. Merge theo `trade_id` vẫn ở `exercises/merge_trades.py`. Không bật Postgres cổng 5432 của compose riêng.
+
 ## 📋 Overview
 
 Hệ thống bài lab học tập về **dbt (Data Build Tool)** - công cụ phổ biến nhất trong Data Engineering để transform data trong data warehouse. Lab này sẽ hướng dẫn bạn từ cơ bản đến nâng cao về dbt.

@@ -1,5 +1,7 @@
 # Airflow Lab - Data Pipeline Orchestration with Apache Airflow
 
+DAG chạy trên nền lab là `trade_quality_gate` trong `dags/trade_quality_gate.py`. Task `stage` gọi `clean_trades`, `choose` rẽ `publish` hoặc `quarantine`, `publish` ghi `symbols.json` lên MinIO và không retry lỗi schema. Notebook 01 dùng `/api/v2/monitor/health`.
+
 ## 🎯 Overview
 
 This lab provides hands-on knowledge about **Apache Airflow 3.1.1** - the leading orchestration tool for data pipelines. Students will learn how to design, schedule, and monitor complex workflows in practice.
@@ -126,21 +128,8 @@ Source Data → Airflow DAG → Task 1 → Task 2 → ... → Destination
 
 ## 📊 Sample DAGs
 
-### **Basic DAGs:**
-- `hello_world_dag.py`: Simplest DAG
-- `tutorial_dag.py`: Tutorial DAG with multiple tasks
-- `etl_pipeline_dag.py`: Sample ETL pipeline
-
-### **Advanced DAGs:**
-- `branching_dag.py`: Conditional branching
-- `dynamic_dag.py`: Dynamic task generation
-- `xcom_dag.py`: Data sharing with XCom
-- `scheduled_dag.py`: Custom scheduling
-
-### **Integration DAGs:**
-- `kafka_spark_dag.py`: Kafka → Spark → Database
-- `data_quality_dag.py`: Data validation pipeline
-- `ml_pipeline_dag.py`: Machine learning pipeline
+### **DAG của lab:**
+- `trade_quality_gate.py`: stage một batch theo logical date, rẽ publish hoặc quarantine, ghi MinIO
 
 ## 🔧 Configuration
 

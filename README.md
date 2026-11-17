@@ -1,5 +1,45 @@
 # Big Data Engineering - Course Materials
 
+## Nền lab
+
+Lệnh một dòng cho capstone (MinIO, Postgres, Kafka KRaft, Spark, Airflow):
+
+```bash
+export AIRFLOW_UID=$(id -u)
+docker compose -f platform/docker-compose.yml --profile lakehouse up -d --build
+```
+
+Cổng host cố định:
+
+| Dịch vụ | Cổng |
+| --- | --- |
+| MinIO API / console | 9000 / 9001 |
+| Postgres | 5432 |
+| Kafka (từ máy host) | 9092 |
+| Schema Registry | 8081 |
+| Kafka Connect | 8083 |
+| AKHQ | 8088 |
+| Spark master UI / RPC | 8082 / 7077 |
+| Airflow | 8080 (airflow / airflow) |
+
+Profile riêng: `core`, `kafka`, `spark`, `airflow`, `lakehouse`. File [`docker-compose.yml`](docker-compose.yml) ở gốc repo include cùng file này. Không còn Kafka wurstmeister và Zookeeper.
+
+Capstone có đáp án nằm ở [`Data_Lakehouse_lab/pipeline`](Data_Lakehouse_lab/pipeline). Hàm `clean_trades` và `aggregate_trades` có mốc `EXERCISE_START` / `EXERCISE_END`. DAG Airflow gọi các script đó, không gọi `echo`.
+
+### Lộ trình chính
+
+1. Docker, S3/MinIO — buổi chuẩn bị
+2. Kafka, Spark, PyIceberg — bài lõi
+3. DuckDB — một buổi đối chiếu khi không cần cụm (`DuckDB_lab/01_when_not_spark.ipynb`)
+4. dbt, Airflow
+5. Data Lakehouse — pipeline thật trên MinIO
+
+### Tùy chọn, không tính vào capstone
+
+- NoSQL, Kubernetes
+- Great Expectations (chất lượng dữ liệu của capstone là dbt test)
+- `archive/` — slide, PDF Hortonworks, và mirror sách Spark. Không phải bài làm
+
 ## 📋 Overview
 
 Repository này chứa toàn bộ tài liệu và bài lab cho khóa học **Big Data Engineering**, bao gồm các công nghệ và công cụ hiện đại trong Data Engineering stack. Tất cả các labs được thiết kế để học viên có thể thực hành từ cơ bản đến nâng cao với các use cases thực tế.
@@ -24,21 +64,21 @@ Repository được tổ chức thành các labs độc lập, mỗi lab tập t
 #### 1. **Kafka Lab** - Real-time Data Streaming
 - **Mục tiêu**: Apache Kafka fundamentals với stock market data
 - **Nội dung**: Topics, partitions, consumer groups, offset management, real-time analytics
-- **Số notebooks**: 5 labs
+- **Số notebooks**: 6 labs
 - **Tech Stack**: Kafka, Zookeeper, Schema Registry, Kafka Connect, AKHQ, Redis
 - **📁 Thư mục**: `Kafka_lab/`
 
 #### 2. **Spark Lab** - Big Data Processing
 - **Mục tiêu**: Apache Spark cho batch và streaming processing
 - **Nội dung**: DataFrames, Structured Streaming, MLlib
-- **Số notebooks**: 3+ notebooks
+- **Số notebooks**: 8 notebooks trong `Spark_lab/` (lab 7 gọi chung `clean_trades` với capstone, lab 8 là session window). Thư mục sách Spark nằm ở `archive/spark-lab/`
 - **Tech Stack**: Spark, Spark SQL, Structured Streaming
 - **📁 Thư mục**: `Spark_lab/`
 
 #### 3. **Airflow Lab** - Workflow Orchestration
 - **Mục tiêu**: Apache Airflow 3.1.1 cho data pipeline orchestration
 - **Nội dung**: DAGs, Tasks, Operators, Hooks, XCom, Scheduling, Integration
-- **Số notebooks**: 7 labs
+- **Số notebooks**: 8 labs
 - **Tech Stack**: Airflow 3.1.1, PostgreSQL, Redis, Celery
 - **📁 Thư mục**: `Airflow_lab/`
 
@@ -47,14 +87,14 @@ Repository được tổ chức thành các labs độc lập, mỗi lab tập t
 #### 4. **dbt Lab** - Data Transformation
 - **Mục tiêu**: dbt (Data Build Tool) cho data transformations
 - **Nội dung**: Models, Jinja templating, Testing, Documentation, Macros, Airflow integration
-- **Số notebooks**: 5 labs
+- **Số notebooks**: 6 labs
 - **Tech Stack**: dbt-core, dbt-postgres, PostgreSQL
 - **📁 Thư mục**: `dbt_lab/`
 
 #### 5. **Great Expectations Lab** - Data Quality
 - **Mục tiêu**: Great Expectations cho data validation và quality checks
 - **Nội dung**: Expectations, Checkpoints, Data Docs, dbt integration, Airflow integration
-- **Số notebooks**: 6 labs
+- **Số notebooks**: 7 labs
 - **Tech Stack**: Great Expectations, PostgreSQL, dbt-expectations
 - **📁 Thư mục**: `Great_Expectations_lab/`
 
@@ -63,14 +103,14 @@ Repository được tổ chức thành các labs độc lập, mỗi lab tập t
 #### 6. **PyIceberg Lab** - Data Lakehouse Format
 - **Mục tiêu**: Apache Iceberg cho data lakehouse storage
 - **Nội dung**: Schema evolution, Data partitioning, Compaction, Time travel
-- **Số notebooks**: 5 labs
+- **Số notebooks**: 6 labs
 - **Tech Stack**: PyIceberg, Apache Iceberg
 - **📁 Thư mục**: `pyiceberg/`
 
 #### 7. **NoSQL Lab** - Multi-model Databases
 - **Mục tiêu**: Các loại NoSQL databases phổ biến
 - **Nội dung**: MongoDB (Document), Neo4j (Graph), Redis (Key-Value), Trino (SQL on everything)
-- **Số notebooks**: 6 labs
+- **Số notebooks**: 7 labs
 - **Tech Stack**: MongoDB, Neo4j, Redis, Trino, PostgreSQL
 - **📁 Thư mục**: `NoSQL_lab/`
 
@@ -88,7 +128,7 @@ Repository được tổ chức thành các labs độc lập, mỗi lab tập t
 #### 9. **K8s Basics Lab** - Container Orchestration
 - **Mục tiêu**: Học Kubernetes fundamentals cho container orchestration
 - **Nội dung**: Pods, Deployments, Services, ConfigMaps, Secrets, Storage, Scaling
-- **Số notebooks**: 7 labs
+- **Số notebooks**: 8 labs
 - **Tech Stack**: Kubernetes, kubectl, minikube/kind
 - **📁 Thư mục**: `K8s_Basics_lab/`
 
@@ -197,19 +237,14 @@ cd materials
 
 2. **Setup environment:**
 ```bash
-# Option 1: Setup tất cả (không khuyến nghị)
-./setup_env.sh
-
-# Option 2: Setup từng lab riêng (khuyến nghị)
 cd Kafka_lab
 ./setup_kafka_lab.sh
 ```
 
 3. **Start services:**
 ```bash
-# Mỗi lab có docker-compose.yml riêng
-cd <lab_name>
-docker-compose up -d
+export AIRFLOW_UID=$(id -u)
+docker compose -f platform/docker-compose.yml --profile lakehouse up -d --build
 ```
 
 4. **Open Jupyter:**
@@ -257,8 +292,8 @@ jupyter notebook
 - **Use Case**: Data lakehouse storage
 
 ### K8s Basics Lab
-- **Duration**: ~10-15 hours
-- **Difficulty**: Advanced
+- **Duration**: ~4-6 hours
+- **Difficulty**: Beginner (kubectl và manifest cơ bản, không phải bài vận hành cụm)
 - **Key Concepts**: Pods, Deployments, Services, ConfigMaps, Secrets, Storage, HPA
 - **Use Case**: Container orchestration và production deployment
 
@@ -442,5 +477,5 @@ Nếu có câu hỏi hoặc cần hỗ trợ:
 
 **Happy Learning! 🚀**
 
-*Last Updated: 2024*
+*Last Updated: 2026-11-17*
 
